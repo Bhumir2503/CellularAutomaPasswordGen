@@ -488,6 +488,7 @@
 
 				// Show loading indicator
 				document.getElementById("loading").style.display = "block";
+				
 				document.getElementById("results").style.display = "none";
 
 				// Prepare request data
@@ -504,7 +505,7 @@
 				};
 
 				// Send request to server
-				fetch("/generate", {
+				fetch("http://127.0.0.1:5000/generate", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -516,6 +517,32 @@
 						// Hide loading indicator
 						document.getElementById("loading").style.display =
 							"none";
+
+							console.log("Grid shape:", data.grid.length, data.grid[0].length);
+							console.log("Sample row:", data.grid[0]);
+
+							if (data.grid && data.grid.length > 0 && data.grid[0].length > 0) {
+								const canvas = document.getElementById("automaton-canvas");
+								const ctx = canvas.getContext("2d");
+								const cellSize = 5;
+								const grid = data.grid;
+								const rows = grid.length;
+								const cols = grid[0].length;
+
+								canvas.width = cols * cellSize;
+								canvas.height = rows * cellSize;
+
+								ctx.clearRect(0, 0, canvas.width, canvas.height);
+								for (let y = 0; y < rows; y++) {
+									for (let x = 0; x < cols; x++) {
+										ctx.fillStyle = grid[y][x] === 1 ? "#3498db" : "#f5f5f5";
+										ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+									}
+								}
+							} else {
+								console.error("Grid data missing or invalid:", data.grid);
+								alert("Visualization failed: invalid grid from server.");
+							}
 
 						if (data.error) {
 							alert(`Error: ${data.error}`);
