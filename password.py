@@ -1,7 +1,9 @@
 import numpy as np
+import pandas as pd
 import random
 import string
 import argparse
+import StrengthAnalyzer
 
 
 class CellularAutomataPasswordGenerator:
@@ -184,15 +186,30 @@ def main():
         rule=args.rule
     )
     
+    rng = np.random.default_rng()   #Initialize random number generator
+    data = []   #Create empty list to store results of experiment
+
     for i in range(args.count):
         password = generator.generate_password(
-            length=args.length,
+            #length=args.length,
+            length=rng.integers(1,20),  #randomize length
             include_lowercase=not args.no_lowercase,
             include_uppercase=not args.no_uppercase,
             include_digits=not args.no_digits,
             include_special=not args.no_special
         )
-        print(f"Password {i+1}: {password}")
+        #print(f"Password {i+1}: {password}")
+        #print("Cryptographic score: ", StrengthAnalyzer.generate_cryptographic_score(password))
+        data.append({
+            'Password': password,
+            'Rule': generator.rule,
+            'Length': len(password),
+            'Strength': StrengthAnalyzer.generate_cryptographic_score(password)
+        })
+    
+    df = pd.DataFrame(data)
+    print (df)
+    df.to_csv('test.csv', index=False)
 
 
 if __name__ == "__main__":
