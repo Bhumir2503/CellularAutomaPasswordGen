@@ -4,6 +4,7 @@ import random
 import string
 import argparse
 import StrengthAnalyzer
+import DataAnalyzer
 
 
 class CellularAutomataPasswordGenerator:
@@ -209,6 +210,7 @@ def main():
     
     df = pd.DataFrame(data)
     print (df)
+    #DataAnalyzer.generate_table_plot(df)
     df.to_csv('test.csv', index=False)
 
 

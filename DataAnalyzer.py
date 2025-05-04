@@ -27,7 +27,6 @@ results_files_4 = ['Rule30_Results_fixedlength_notusingallchars.csv',
                    'Rule110_Results_fixedlength_notusingallchars.csv' ]
 
 xAxis = ['Rule 30', 'Rule 54', 'Rule 90', 'Rule 110'] #Rule used
-strongest_words = {}
 
 def generate_bar_plot (result_list, title_str):
     yAxis = [] #column being tested
@@ -35,7 +34,10 @@ def generate_bar_plot (result_list, title_str):
         data = pd.read_csv(file)
         yAxis.append(np.round(np.mean(data['Strength']), 3))
 
-    plt.bar(xAxis, yAxis)
+    strongest_bar = np.max(yAxis)
+    colors = ['#fa8d20' if val == strongest_bar else '#3480eb' for val in yAxis]
+
+    plt.bar(xAxis, yAxis, color = colors)
     plt.ylim(0,100)
     plt.xlabel("Rule Used")
     plt.ylabel("Cryptographic Strength")
@@ -45,7 +47,16 @@ def generate_bar_plot (result_list, title_str):
         plt.text(i, value + 1, str(value), ha='center', va='bottom')
     plt.show()
 
+def generate_table_plot (my_df):
+    # Create a figure and axis
+    fig, ax = plt.subplots(figsize=(6, 2))
+    ax.axis('off')  # Hide axes
 
+    # Create table
+    table = ax.table(cellText=my_df.values, colLabels=my_df.columns, loc='center')
+    table.scale(1, 2)  # Optional: Adjust size
+    #plt.title("Data Table")
+    plt.show()
 
 """ for file in results_files:
     data = pd.read_csv(file)
