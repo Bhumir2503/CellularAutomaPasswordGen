@@ -25,7 +25,8 @@ def generate_password(length, lowercase, uppercase, digits, special):
 
 def generate_automaton(rule, width, iterations):
     grid = [[0 for _ in range(width)] for _ in range(iterations)]
-    grid[0][width // 2] = 1  # Center cell is active
+    # Randomize the first row
+    grid[0] = [random.randint(0, 1) for _ in range(width)]
 
     ruleset = [(rule >> i) & 1 for i in reversed(range(8))]
 
@@ -59,13 +60,42 @@ def generate():
     iterations = data.get("iterations", 50)
     count = data.get("count", 3)
 
-    passwords = [
-        generate_password(length, lowercase, uppercase, digits, special)
-        for _ in range(count)
-    ]
-    grid = generate_automaton(rule, width, iterations)
+    # Build character set
+    charset = ""
+    if lowercase:
+        charset += string.ascii_lowercase
+    if uppercase:
+        charset += string.ascii_uppercase
+    if digits:
+        charset += string.digits
+    if special:
+        charset += "!@#$%^&*"
 
-    response = jsonify({"passwords": passwords, "grid": grid})
+    if not charset:
+        return jsonify({"error": "No character sets selected."}), 400
+
+    def password_from_automaton(grid, charset, length):
+        flat_bits = [bit for row in grid for bit in row]
+        indices = [
+            int(''.join(map(str, flat_bits[i:i+8])), 2) % len(charset)
+            for i in range(0, len(flat_bits) - 8, 8)
+        ]
+        return ''.join(charset[i] for i in indices[:length])
+
+    passwords = []
+    first_grid = None
+
+    for i in range(count):
+        grid = generate_automaton(rule, width, iterations)
+        password = password_from_automaton(grid, charset, length)
+        passwords.append(password)
+        if i == 0:
+            first_grid = grid  # Store only the first for visualization
+
+    response = jsonify({
+        "passwords": passwords,
+        "grid": first_grid
+    })
     response.headers.add("Access-Control-Allow-Origin", "*")
     response.headers.add("Access-Control-Allow-Headers", "Content-Type")
     response.headers.add("Access-Control-Allow-Methods", "POST")
